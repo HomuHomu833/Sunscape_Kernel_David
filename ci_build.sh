@@ -20,7 +20,7 @@ git clone --depth 1 -b surya https://github.com/sunscape-stuff/AnyKernel3 || exi
 # Workaround for safe.directory permission fix
 git config --global safe.directory "$GITHUB_WORKSPACE"
 git config --global safe.directory /github/workspace
-git config --global --add safe.directory /__w/kernel_xiaomi_surya/kernel_xiaomi_surya
+git config --global --add safe.directory $(pwd)
 
 # Export Environment Variables.
 export DATE=$(date +"%d-%m-%Y-%I-%M")
@@ -52,35 +52,6 @@ if [ "$(cat /sys/devices/system/cpu/smt/active)" = "1" ]; then
 		export THREADS=$(nproc --all)
 	fi
 
-# Telegram API Stuff
-BUILD_START=$(date +"%s")
-KBUILD_COMPILER_STRING=$("$TC_DIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
-BOT_MSG_URL="https://api.telegram.org/bot$token/sendMessage"
-BOT_BUILD_URL="https://api.telegram.org/bot$token/sendDocument"
-CHATID=-1002079649530
-COMMIT_HEAD=$(git log --oneline -1)
-TERM=xterm
-
-tg_post_msg() {
-	curl -s -X POST "$BOT_MSG_URL" -d chat_id="$CHATID" \
-	-d "disable_web_page_preview=true" \
-	-d "parse_mode=html" \
-	-d text="$1"
-
-}
-
-tg_post_build() {
-	#Post MD5Checksum alongwith for easeness
-	MD5CHECK=$(md5sum "$1" | cut -d' ' -f1)
-
-	#Show the Checksum alongwith caption
-	curl --progress-bar -F document=@"$1" "$BOT_BUILD_URL" \
-	-F chat_id="$CHATID"  \
-	-F "disable_web_page_preview=true" \
-	-F "parse_mode=Markdown" \
-	-F caption="$2 | *MD5 Checksum : *\`$MD5CHECK\`"
-}
-
 # Make defconfig
 # make $DEFCONFIG LD=aarch64-elf-ld.lld O=out/
 make $DEFCONFIG -j$THREADS CC=clang LD=ld.lld AS=llvm-as AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out
@@ -89,7 +60,6 @@ make $DEFCONFIG -j$THREADS CC=clang LD=ld.lld AS=llvm-as AR=llvm-ar NM=llvm-nm O
 echo The system has $SYSMEM MB of total memory.
 echo Using $THREADS jobs for this build...
 echo Building branch: $GITBRNCH
-tg_post_msg "<b>Build Started on Github Actions</b>%0A<b>Branch: </b><code>$GITBRNCH</code>%0A<b>Build ID: </b><code>"$BUILD_ID"</code>%0A<b>Date : </b><code>$(TZ=Etc/UTC date)</code>%0A<b>Top Commit : </b><code>$COMMIT_HEAD</code>%0A"
 # make -j$THREADS LD=ld.lld O=out/
 make -j$THREADS CC='ccache clang -Qunused-arguments -fcolor-diagnostics' LLVM=1 LD=ld.lld LLVM_IAS=1 AS=llvm-as AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out/
 
@@ -97,7 +67,6 @@ make -j$THREADS CC='ccache clang -Qunused-arguments -fcolor-diagnostics' LLVM=1 
 if ! [ -a $KERNEL_IMG ];
   then
     echo "An error has occured during compilation. Please check your code."
-    tg_post_msg "<b>An error has occured during compilation. Build has failed</b>%0A"
     exit 1
   fi
 
@@ -112,4 +81,3 @@ curl -sLo zipsigner-3.0.jar https://github.com/Magisk-Modules-Repo/zipsigner/raw
 java -jar zipsigner-3.0.jar UPDATE-AnyKernel3.zip Sunscape-$GITBRNCH-$BUILD_ID.zip
 BUILD_END=$(date +"%s")
 DIFF=$((BUILD_END - BUILD_START))
-tg_post_build "Sunscape-$GITBRNCH-$BUILD_ID.zip" "Build took : $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s)"

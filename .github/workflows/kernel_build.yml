@@ -2,7 +2,6 @@
 name: Build Kernel on Github Actions
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
@@ -16,7 +15,7 @@ jobs:
         run: pacman -Sy --noconfirm && pacman -S archlinux-keyring --noconfirm && pacman -Syu --needed --noconfirm aarch64-linux-gnu-binutils wget base-devel xmlto libxml2 libxml2-legacy inetutils bc cpio python-sphinx python-sphinx_rtd_theme graphviz imagemagick git python zip github-cli fortune-mod ccache jre8-openjdk
       - uses: actions/checkout@v4
       - name: Add repo as a safe directory
-        run: git config --global --add safe.directory /__w/kernel_xiaomi_surya/kernel_xiaomi_surya
+        run: git config --global --add safe.directory $(pwd)
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
       - name: Initialize ccache

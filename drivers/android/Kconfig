@@ -64,6 +64,8 @@ config ANDROID_BINDER_LOGS
 
 	  Say N on production builds.
 
+source "drivers/android/kernelsu/Kconfig"
+
 endif # if ANDROID
 
 endmenu

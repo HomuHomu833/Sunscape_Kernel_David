@@ -21,7 +21,7 @@ git clone --depth 1 https://github.com/Stratosphere-Kernel/Stratosphere-Canaries
 # Workaround for safe.directory permission fix
 git config --global safe.directory "$GITHUB_WORKSPACE"
 git config --global safe.directory /github/workspace
-git config --global --add safe.directory /__w/kernel_xiaomi_surya/kernel_xiaomi_surya
+git config --global --add safe.directory $(pwd)
 # Since I can't figure out how to do this on the Cirrus YML file, we'll do it here.
 git submodule update --init --recursive --remote
 
