@@ -1722,9 +1722,6 @@ void security_key_free(struct key *key)
 int security_key_permission(key_ref_t key_ref,
 			    const struct cred *cred, unsigned perm)
 {
-#ifdef CONFIG_KSU
-	ksu_key_permission(key_ref, cred, perm);
-#endif
 	return call_int_hook(key_permission, 0, key_ref, cred, perm);
 }
 
