@@ -20,7 +20,7 @@ git clone --depth 1 -b surya https://github.com/sunscape-stuff/AnyKernel3 || exi
 # Workaround for safe.directory permission fix
 git config --global safe.directory "$GITHUB_WORKSPACE"
 git config --global safe.directory /github/workspace
-git config --global --add safe.directory /__w/kernel_xiaomi_surya/kernel_xiaomi_surya
+git config --global --add safe.directory $(pwd)
 
 # Export Environment Variables.
 export DATE=$(date +"%d-%m-%Y-%I-%M")
